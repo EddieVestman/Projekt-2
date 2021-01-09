@@ -12,7 +12,7 @@ namespace Template
     class Bullet : Basklass
     {
 
-        private float speed = 6.5f;
+        private float speed = 7.5f;
         private Vector2 origin;
 
         private bool isVisable;
