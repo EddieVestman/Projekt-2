@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,17 +10,17 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Template
 {
+    public enum GameState
+    {
+        Game,
+        Ending
+    }
+
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
     public class Game1 : Game
     {
-        public enum GameState
-        {
-            MainMenu,
-            Game,
-            Ending
-        }
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public static int Height;
@@ -43,9 +44,11 @@ namespace Template
         Random random = new Random();
         Rectangle enemyRectangle;
 
+        GameState gameState;
+
+        int points = 0;
         
-
-
+        string filepath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Points.txt"); // Lägger en fil i appdata som läser och skriver totalpoints :D
         KeyboardState koldstate;
 
         //Komentar
@@ -69,6 +72,9 @@ namespace Template
             playerPos.Y = graphics.PreferredBackBufferHeight - playerPos.Height;
             playerPos.X = graphics.PreferredBackBufferWidth / 2 - playerPos.Width / 2;
 
+
+            gameState = GameState.Game;
+
             base.Initialize();
         }
 
@@ -87,7 +93,16 @@ namespace Template
             bulletRectangle = new Rectangle(300, 300, bulletTexture.Width, bulletTexture.Height);
             enemyTexture = Content.Load<Texture2D>("Enemy1");
             enemyRectangle = new Rectangle(350, 550, enemyTexture.Width, enemyTexture.Height);
-            // TODO: use this.Content to load your game content here 
+
+            if (!File.Exists(filepath))
+            {
+                File.Create(filepath).Dispose();
+                SaveScore();
+            }
+            StreamReader sr = new StreamReader(filepath);
+            string text = sr.ReadToEnd();
+            sr.Close();
+            points = int.Parse(text);
         }
 
         /// <summary>
@@ -127,7 +142,24 @@ namespace Template
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
 
         float spawn = 0;
+
         protected override void Update(GameTime gameTime)
+        {
+            switch(gameState)
+            {
+                case GameState.Game:
+                    UpdateGame();
+                    break;
+                case GameState.Ending:
+                    SaveScore();
+                    Exit();
+                    break;
+            }
+
+            base.Update(gameTime);
+        }
+
+        public void UpdateGame()
         {
            
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -148,8 +180,6 @@ namespace Template
             spawn += 2;
             foreach (Enemy enemy in enemies)
                 enemy.Update(graphics.GraphicsDevice);
-
-            base.Update(gameTime);
 
             Collision();
 
@@ -210,15 +240,24 @@ namespace Template
                     {
                         enemy.isVisible = false;
                         bullet.IsVisable = false;
+                        points++;
                     }
 
                 }
                 if (enemy.Hitbox.Intersects(playerPos))
                 {
-                    Exit();
+                    gameState = GameState.Ending;
                 }
 
             }
+        }
+
+        public void SaveScore()
+        {
+            StreamWriter sw = new StreamWriter(filepath);
+            sw.WriteLine(points);
+            sw.Close();
+            
         }
     }
 }
