@@ -17,6 +17,9 @@ namespace Template
 
         private bool isVisable;
 
+        private Rectangle hitbox = new Rectangle();
+
+
         public Vector2 Position
         {
 
@@ -28,25 +31,40 @@ namespace Template
         {
 
             get { return isVisable; }
+            set { isVisable = value; }
+
+        }
+        public Rectangle Hitbox
+        {
+
+            get { return hitbox; }
 
         }
 
         public Bullet(Texture2D newTexture, Vector2 startPos)
         {
             texture = newTexture;
-            position = startPos;
+            position = startPos - new Vector2(-5, 50);
             position.X += 75;
             isVisable = true;
+
+
+
+            hitbox.Location = position.ToPoint();
+            hitbox.Size = new Point(20, 50);
 
         }
 
         public void Update()
         {
             position.Y -= speed;
+
+            hitbox.Location = position.ToPoint();
+
         }
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, position, null, Color.White, (float)-Math.PI / 2, origin, .1f, SpriteEffects.None, 0);
+            spriteBatch.Draw(texture, hitbox, Color.Lime);
         }
     }
 }

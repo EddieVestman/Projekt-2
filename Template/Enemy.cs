@@ -11,24 +11,36 @@ namespace Template
 {
     class Enemy
     {
-        public Texture2D texture;
-        public Vector2 position;
-        public Vector2 velocity;
+        private Texture2D texture;
+        private Vector2 position;
+        private Vector2 velocity;
 
         public bool isVisible = true;
 
+        private Rectangle hitbox = new Rectangle();
+
         Random random = new Random();
         int randX, randY;
+
+        public Rectangle Hitbox
+        {
+
+            get { return hitbox; }
+
+        }
 
         public Enemy(Texture2D newTexture, Vector2 newPosition)
         {
             texture = newTexture;
             position = newPosition;
-
-            randX = random.Next(-11, 1);
+                 
+            randX = random.Next(-1, 1);
             randY = random.Next(5, 8);
 
             velocity = new Vector2(randX, randY);
+
+            hitbox.Location = position.ToPoint();
+            hitbox.Size = new Point(200, 200);
         }
 
         public void Update(GraphicsDevice graphics)
@@ -40,10 +52,12 @@ namespace Template
 
             if (position.Y > graphics.Viewport.Height)
                 isVisible = false;
+
+            hitbox.Location = position.ToPoint();
         }
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, position, Color.White);
+            spriteBatch.Draw(texture, hitbox, Color.White);
         }
 
     }

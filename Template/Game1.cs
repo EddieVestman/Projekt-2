@@ -14,6 +14,12 @@ namespace Template
     /// </summary>
     public class Game1 : Game
     {
+        public enum GameState
+        {
+            MainMenu,
+            Game,
+            Ending
+        }
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public static int Height;
@@ -21,16 +27,23 @@ namespace Template
         //player
         Texture2D plane;
         Rectangle playerPos;
+       
         //background
         Texture2D background;
         Vector2 backgroundpos;
+        
         //bullets
         List<Bullet> bullets = new List<Bullet>();
         Texture2D bulletTexture;
         Texture2D enemyTexture;
+        Rectangle bulletRectangle;
 
+        //enemies
         List<Enemy> enemies = new List<Enemy>();
         Random random = new Random();
+        Rectangle enemyRectangle;
+
+        
 
 
         KeyboardState koldstate;
@@ -71,7 +84,9 @@ namespace Template
            background = Content.Load<Texture2D>("spacebild");
             plane = Content.Load<Texture2D>("lasercannon");
             bulletTexture = Content.Load<Texture2D>("Bullet");
+            bulletRectangle = new Rectangle(300, 300, bulletTexture.Width, bulletTexture.Height);
             enemyTexture = Content.Load<Texture2D>("Enemy1");
+            enemyRectangle = new Rectangle(350, 550, enemyTexture.Width, enemyTexture.Height);
             // TODO: use this.Content to load your game content here 
         }
 
@@ -114,7 +129,7 @@ namespace Template
         float spawn = 0;
         protected override void Update(GameTime gameTime)
         {
-
+           
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             KeyboardState knewstate = Keyboard.GetState();
@@ -135,6 +150,8 @@ namespace Template
                 enemy.Update(graphics.GraphicsDevice);
 
             base.Update(gameTime);
+
+            Collision();
 
             LoadEnemies();
             koldstate = knewstate;
@@ -163,6 +180,7 @@ namespace Template
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+           
 
             GraphicsDevice.Clear(Color.White);
             spriteBatch.Begin();
@@ -171,14 +189,36 @@ namespace Template
             backgroundRec.Size = new Point(Width, Height);
             spriteBatch.Draw(background, new Rectangle(0, 0, Width, Height), Color.White);
             spriteBatch.Draw(plane, playerPos, Color.White);
+           
             foreach (Bullet bullet in bullets)
                 bullet.Draw(spriteBatch);
             foreach (Enemy enemy in enemies)
                 enemy.Draw(spriteBatch);
             spriteBatch.End();
-            // TODO: Add your drawing code here.
+           
 
             base.Draw(gameTime);
+        }
+
+        public void Collision()
+        {
+            foreach (Enemy enemy in enemies)
+            {
+                foreach (Bullet bullet in bullets)
+                {
+                    if (bullet.Hitbox.Intersects(enemy.Hitbox))
+                    {
+                        enemy.isVisible = false;
+                        bullet.IsVisable = false;
+                    }
+
+                }
+                if (enemy.Hitbox.Intersects(playerPos))
+                {
+                    Exit();
+                }
+
+            }
         }
     }
 }
